@@ -50,6 +50,11 @@ class HTTPPostJSONNode:
     CATEGORY = "HTTP/API"
     OUTPUT_NODE = False
     
+    @classmethod
+    def IS_CHANGED(cls, **kwargs):
+        # Always run - bypass ComfyUI caching
+        return float("NaN")
+    
     def http_post_json(self, url: str, json_data: str, headers: str = "",
                       timeout: int = 30, retry_count: int = 1, retry_delay: int = 5) -> Tuple[str, str, int, bool, str]:
         
