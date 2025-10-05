@@ -5,6 +5,8 @@
 [![Code Style: Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Maintained](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/wawahuy/ComfyUI-HTTP/graphs/commit-activity)
 
+![alt text](sample-workflow/wf.png)
+
 **Professional HTTP integration nodes for ComfyUI workflows** - Transform your ComfyUI experience with seamless web API connectivity, enabling powerful automation and data exchange capabilities.
 
 ## Features
