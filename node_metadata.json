@@ -1,0 +1,242 @@
+{
+  "name": "ComfyUI HTTP Nodes",
+  "description": "Comprehensive HTTP client nodes for ComfyUI workflows",
+  "version": "2.0.0",
+  "author": "wawahuy",
+  "license": "MIT",
+  "repository": "https://github.com/wawahuy/ComfyUI-HTTP",
+  "nodes": {
+    "HTTPSessionManager": {
+      "category": "HTTP/Session",
+      "description": "Create and manage persistent HTTP sessions with authentication",
+      "inputs": {
+        "required": ["session_name", "base_url", "timeout"],
+        "optional": ["headers", "cookies", "auth_type", "username", "password", "token", "api_key", "verify_ssl", "proxy_url"]
+      },
+      "outputs": ["session"]
+    },
+    "HTTPAuth": {
+      "category": "HTTP/Authentication", 
+      "description": "Configure authentication methods for HTTP requests",
+      "inputs": {
+        "required": ["auth_type"],
+        "optional": ["username", "password", "token", "api_key", "api_key_header", "custom_headers"]
+      },
+      "outputs": ["auth_config"]
+    },
+    "HTTPGet": {
+      "category": "HTTP/Methods",
+      "description": "Perform HTTP GET requests with full configuration support",
+      "inputs": {
+        "required": ["url"],
+        "optional": ["session", "auth", "headers", "params", "timeout", "verify_ssl", "cookies", "proxy_url"]
+      },
+      "outputs": ["status_code", "headers", "content", "json"]
+    },
+    "HTTPPost": {
+      "category": "HTTP/Methods",
+      "description": "Perform HTTP POST requests with JSON, form data, or raw data",
+      "inputs": {
+        "required": ["url", "content_type"],
+        "optional": ["session", "auth", "headers", "json_data", "form_data", "raw_data", "timeout", "verify_ssl", "cookies"]
+      },
+      "outputs": ["status_code", "headers", "content", "json"]
+    },
+    "HTTPPut": {
+      "category": "HTTP/Methods",
+      "description": "Perform HTTP PUT requests for updates",
+      "inputs": {
+        "required": ["url", "content_type"],
+        "optional": ["session", "auth", "headers", "json_data", "raw_data", "timeout", "verify_ssl", "cookies"]
+      },
+      "outputs": ["status_code", "headers", "content", "json"]
+    },
+    "HTTPPatch": {
+      "category": "HTTP/Methods",
+      "description": "Perform HTTP PATCH requests for partial updates",
+      "inputs": {
+        "required": ["url", "content_type"],
+        "optional": ["session", "auth", "headers", "json_data", "raw_data", "timeout", "verify_ssl", "cookies"]
+      },
+      "outputs": ["status_code", "headers", "content", "json"]
+    },
+    "HTTPDelete": {
+      "category": "HTTP/Methods",
+      "description": "Perform HTTP DELETE requests",
+      "inputs": {
+        "required": ["url"],
+        "optional": ["session", "auth", "headers", "params", "timeout", "verify_ssl", "cookies"]
+      },
+      "outputs": ["status_code", "headers", "content", "json"]
+    },
+    "HTTPHead": {
+      "category": "HTTP/Methods",
+      "description": "Perform HTTP HEAD requests to get headers only",
+      "inputs": {
+        "required": ["url"],
+        "optional": ["session", "auth", "headers", "params", "timeout", "verify_ssl", "cookies"]
+      },
+      "outputs": ["status_code", "headers", "content_length", "content_type"]
+    },
+    "HTTPOptions": {
+      "category": "HTTP/Methods",
+      "description": "Perform HTTP OPTIONS requests for CORS and allowed methods",
+      "inputs": {
+        "required": ["url"],
+        "optional": ["session", "auth", "headers", "timeout", "verify_ssl", "cookies"]
+      },
+      "outputs": ["status_code", "headers", "allowed_methods", "cors_headers", "content"]
+    },
+    "HTTPFormData": {
+      "category": "HTTP/Form Data",
+      "description": "Container for multipart form data",
+      "inputs": {
+        "optional": ["item1", "item2", "item3", "item4", "item5", "item6", "item7", "item8", "item9", "item10"]
+      },
+      "outputs": ["form_data"]
+    },
+    "HTTPFormDataItem": {
+      "category": "HTTP/Form Data",
+      "description": "Basic form data item",
+      "inputs": {
+        "required": ["name", "value"]
+      },
+      "outputs": ["form_item"]
+    },
+    "HTTPFormTextItem": {
+      "category": "HTTP/Form Data",
+      "description": "Text form data item with content type",
+      "inputs": {
+        "required": ["name", "value"],
+        "optional": ["content_type"]
+      },
+      "outputs": ["form_item"]
+    },
+    "HTTPFormFileItem": {
+      "category": "HTTP/Form Data",
+      "description": "File form data item",
+      "inputs": {
+        "required": ["name", "file_path"],
+        "optional": ["filename", "content_type"]
+      },
+      "outputs": ["form_item"]
+    },
+    "HTTPFormImageItem": {
+      "category": "HTTP/Form Data",
+      "description": "Image form data item from ComfyUI IMAGE",
+      "inputs": {
+        "required": ["name", "image"],
+        "optional": ["filename", "format", "quality"]
+      },
+      "outputs": ["form_item"]
+    },
+    "HTTPFormDataConcat": {
+      "category": "HTTP/Form Data",
+      "description": "Combine multiple form data objects",
+      "inputs": {
+        "required": ["form_data1"],
+        "optional": ["form_data2", "form_data3", "form_data4", "form_data5", "overwrite_duplicates"]
+      },
+      "outputs": ["combined_form_data"]
+    },
+    "HTTPConvertJSON": {
+      "category": "HTTP/JSON",
+      "description": "Parse, format, stringify, and minify JSON data",
+      "inputs": {
+        "required": ["input_data", "operation"],
+        "optional": ["indent", "sort_keys", "ensure_ascii"]
+      },
+      "outputs": ["result", "formatted"]
+    },
+    "HTTPGetJSONField": {
+      "category": "HTTP/JSON",
+      "description": "Extract fields from JSON using JSONPath or simple notation",
+      "inputs": {
+        "required": ["json_data", "field_path", "extraction_method"],
+        "optional": ["default_value", "return_type", "multiple_results"]
+      },
+      "outputs": ["value", "formatted_value", "count"]
+    },
+    "HTTPFileUpload": {
+      "category": "HTTP/File Operations",
+      "description": "Upload files via HTTP with progress and configuration",
+      "inputs": {
+        "required": ["url", "file_path", "field_name"],
+        "optional": ["session", "auth", "headers", "additional_data", "filename", "content_type", "timeout"]
+      },
+      "outputs": ["status_code", "headers", "content", "json"]
+    },
+    "HTTPImageLoader": {
+      "category": "HTTP/Image Operations",
+      "description": "Load and process images from HTTP URLs",
+      "inputs": {
+        "required": ["url"],
+        "optional": ["session", "auth", "headers", "timeout", "verify_ssl", "max_size", "resize_mode", "target_width", "target_height", "convert_mode"]
+      },
+      "outputs": ["image", "width", "height", "format", "info"]
+    },
+    "Base64ToImage": {
+      "category": "HTTP/Image Conversion",
+      "description": "Convert base64 strings to ComfyUI IMAGE tensors",
+      "inputs": {
+        "required": ["base64_string"],
+        "optional": ["remove_prefix", "convert_mode"]
+      },
+      "outputs": ["image", "width", "height", "info"]
+    },
+    "ImageToBase64": {
+      "category": "HTTP/Image Conversion",
+      "description": "Convert ComfyUI IMAGE tensors to base64 strings",
+      "inputs": {
+        "required": ["image", "format"],
+        "optional": ["quality", "add_prefix", "optimize"]
+      },
+      "outputs": ["base64_string", "data_url", "size_bytes"]
+    },
+    "HTTPDisplayResult": {
+      "category": "HTTP/Display",
+      "description": "Display HTTP responses in formatted, readable way",
+      "inputs": {
+        "required": ["status_code", "headers", "content"],
+        "optional": ["display_mode", "max_content_length", "show_headers", "show_cookies", "json_indent"]
+      },
+      "outputs": ["display_text", "summary", "status_text", "success"]
+    },
+    "HTTPUtils": {
+      "category": "HTTP/Utilities",
+      "description": "Various HTTP utility functions (encoding, timestamps, signatures)",
+      "inputs": {
+        "required": ["operation", "input_data"],
+        "optional": ["secret_key", "algorithm", "url_base", "url_path", "url_params"]
+      },
+      "outputs": ["result", "info", "success"]
+    }
+  },
+  "features": [
+    "Complete HTTP methods (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS)",
+    "Session management with persistent cookies and authentication",
+    "Multiple authentication methods (Basic, Bearer, API Key, Token, OAuth2)",
+    "Form data handling with file and image uploads",
+    "JSON processing with JSONPath support",
+    "Image loading and conversion (URL to IMAGE, base64 conversion)",
+    "File upload with automatic content-type detection",
+    "Comprehensive error handling and retry logic",
+    "Proxy support for corporate environments",
+    "Utility functions for common HTTP operations"
+  ],
+  "dependencies": {
+    "required": [
+      "requests>=2.25.0",
+      "pillow>=8.0.0", 
+      "numpy>=1.19.0"
+    ],
+    "optional": [
+      "jsonpath-ng>=1.5.0"
+    ]
+  },
+  "installation": {
+    "method": "git",
+    "url": "https://github.com/wawahuy/ComfyUI-HTTP.git",
+    "requirements": "requirements.txt"
+  }
+}

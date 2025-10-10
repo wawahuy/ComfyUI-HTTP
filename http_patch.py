@@ -1,28 +1,30 @@
 """
-HTTP GET request node for ComfyUI
-Performs GET requests with full configuration support
+HTTP PATCH request node for ComfyUI
+Performs PATCH requests with support for JSON, form data, and raw data
 """
 
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional
 from .http_client import HTTPClient
 from .http_auth import HTTPAuth
 from urllib.parse import urljoin
 import json
 
-class HTTPGet:
-    """HTTP GET Request Node for ComfyUI"""
+class HTTPPatch:
+    """HTTP PATCH Request Node for ComfyUI"""
     
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "url": ("STRING", {"default": "https://api.example.com/data"}),
+                "url": ("STRING", {"default": "https://api.example.com/data/1"}),
+                "content_type": (["json", "form", "raw"], {"default": "json"}),
             },
             "optional": {
                 "session": ("HTTP_SESSION",),
                 "auth": ("HTTP_AUTH",),
                 "headers": ("STRING", {"default": "{}"}),
-                "params": ("STRING", {"default": "{}"}),
+                "json_data": ("STRING", {"default": "{}"}),
+                "raw_data": ("STRING", {"default": ""}),
                 "timeout": ("INT", {"default": 30, "min": 1, "max": 300}),
                 "verify_ssl": ("BOOLEAN", {"default": True}),
                 "allow_redirects": ("BOOLEAN", {"default": True}),
@@ -36,11 +38,11 @@ class HTTPGet:
     FUNCTION = "make_request"
     CATEGORY = "HTTP/Methods"
     
-    def make_request(self, url: str, session: Optional[Dict] = None, auth: Optional[Dict] = None,
-                    headers: str = "{}", params: str = "{}", timeout: int = 30,
-                    verify_ssl: bool = True, allow_redirects: bool = True,
-                    cookies: str = "{}", proxy_url: str = ""):
-        """Make HTTP GET request"""
+    def make_request(self, url: str, content_type: str, session: Optional[Dict] = None, 
+                    auth: Optional[Dict] = None, headers: str = "{}", json_data: str = "{}", 
+                    raw_data: str = "", timeout: int = 30, verify_ssl: bool = True, 
+                    allow_redirects: bool = True, cookies: str = "{}", proxy_url: str = ""):
+        """Make HTTP PATCH request"""
         
         try:
             # Use session client if provided, otherwise create new one
@@ -79,16 +81,35 @@ class HTTPGet:
                 except Exception as e:
                     print(f"Warning: Failed to parse cookies: {e}")
             
-            # Parse query parameters
-            params_dict = {}
-            if params and params != "{}":
-                try:
-                    params_dict = json.loads(params)
-                except Exception as e:
-                    print(f"Warning: Failed to parse params: {e}")
+            # Prepare request data based on content type
+            request_kwargs = {}
+            
+            if content_type == "json":
+                if json_data and json_data != "{}":
+                    try:
+                        json_obj = json.loads(json_data)
+                        request_kwargs["json_data"] = json_obj
+                    except Exception as e:
+                        print(f"Warning: Failed to parse JSON data: {e}")
+                        request_kwargs["data"] = json_data
+            
+            elif content_type == "form":
+                if json_data and json_data != "{}":
+                    try:
+                        form_dict = json.loads(json_data)
+                        request_kwargs["data"] = form_dict
+                    except Exception as e:
+                        print(f"Warning: Failed to parse form data: {e}")
+                        request_kwargs["data"] = json_data
+            
+            elif content_type == "raw":
+                if raw_data:
+                    request_kwargs["data"] = raw_data
+                elif json_data and json_data != "{}":
+                    request_kwargs["data"] = json_data
             
             # Make the request
-            status_code, response_headers, content = client.get(url, params=params_dict if params_dict else None)
+            status_code, response_headers, content = client.patch(url, **request_kwargs)
             
             # Convert headers to JSON string
             headers_json = json.dumps(response_headers, indent=2)
@@ -108,6 +129,6 @@ class HTTPGet:
             return (status_code, headers_json, content, json_content)
             
         except Exception as e:
-            error_msg = f"HTTP GET request failed: {str(e)}"
+            error_msg = f"HTTP PATCH request failed: {str(e)}"
             print(error_msg)
             return (0, "{}", error_msg, error_msg)

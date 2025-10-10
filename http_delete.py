@@ -1,22 +1,22 @@
 """
-HTTP GET request node for ComfyUI
-Performs GET requests with full configuration support
+HTTP DELETE request node for ComfyUI
+Performs DELETE requests with optional authentication and headers
 """
 
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional
 from .http_client import HTTPClient
 from .http_auth import HTTPAuth
 from urllib.parse import urljoin
 import json
 
-class HTTPGet:
-    """HTTP GET Request Node for ComfyUI"""
+class HTTPDelete:
+    """HTTP DELETE Request Node for ComfyUI"""
     
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "url": ("STRING", {"default": "https://api.example.com/data"}),
+                "url": ("STRING", {"default": "https://api.example.com/data/1"}),
             },
             "optional": {
                 "session": ("HTTP_SESSION",),
@@ -40,7 +40,7 @@ class HTTPGet:
                     headers: str = "{}", params: str = "{}", timeout: int = 30,
                     verify_ssl: bool = True, allow_redirects: bool = True,
                     cookies: str = "{}", proxy_url: str = ""):
-        """Make HTTP GET request"""
+        """Make HTTP DELETE request"""
         
         try:
             # Use session client if provided, otherwise create new one
@@ -87,8 +87,13 @@ class HTTPGet:
                 except Exception as e:
                     print(f"Warning: Failed to parse params: {e}")
             
+            # Prepare request kwargs
+            request_kwargs = {}
+            if params_dict:
+                request_kwargs["params"] = params_dict
+            
             # Make the request
-            status_code, response_headers, content = client.get(url, params=params_dict if params_dict else None)
+            status_code, response_headers, content = client.delete(url, **request_kwargs)
             
             # Convert headers to JSON string
             headers_json = json.dumps(response_headers, indent=2)
@@ -96,8 +101,11 @@ class HTTPGet:
             # Try to parse content as JSON
             json_content = ""
             try:
-                parsed_json = json.loads(content)
-                json_content = json.dumps(parsed_json, indent=2)
+                if content:
+                    parsed_json = json.loads(content)
+                    json_content = json.dumps(parsed_json, indent=2)
+                else:
+                    json_content = "{}"
             except:
                 json_content = content
             
@@ -108,6 +116,6 @@ class HTTPGet:
             return (status_code, headers_json, content, json_content)
             
         except Exception as e:
-            error_msg = f"HTTP GET request failed: {str(e)}"
+            error_msg = f"HTTP DELETE request failed: {str(e)}"
             print(error_msg)
             return (0, "{}", error_msg, error_msg)

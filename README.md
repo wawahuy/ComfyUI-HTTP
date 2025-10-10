@@ -11,24 +11,16 @@
 
 ## Features
 
-### Core HTTP Operations
-- **HTTP GET**: Fetch data from REST APIs with advanced parameter handling
-- **HTTP POST**: Send JSON, form data, and raw payloads with comprehensive options
-- **JSON Field Extraction**: Parse and extract specific fields from JSON responses
-- **Form Data Management**: Build complex multipart form data with files and images
-
-### Image Processing Integration
-- **Base64 ↔ Image Conversion**: Seamlessly convert between image formats and base64 encoding
-- **File Upload Support**: Direct file and image uploads through HTTP requests
-- **Image Pipeline Integration**: Perfect integration with ComfyUI's image processing workflows
-
-### Advanced Capabilities
-- **Performance Optimized**: Efficient HTTP client with connection pooling and timeouts
-- **Error Handling**: Robust error handling with detailed feedback and retry mechanisms
-- **Flexible Configuration**: Customizable headers, parameters, and request options
-- **Comprehensive Logging**: Detailed logging for debugging and monitoring
-
-## Quick Start
+- **Complete HTTP Methods**: GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS
+- **Session Management**: Persistent sessions with cookies and authentication
+- **Authentication Support**: Basic, Bearer, API Key, Token, OAuth2
+- **Form Data Handling**: Text fields, file uploads, image uploads, multipart forms
+- **JSON Processing**: Parse, format, extract fields with JSONPath support
+- **Image Operations**: Load images from URLs, convert to/from base64
+- **File Operations**: Upload files of any type with automatic content-type detection
+- **Utilities**: URL encoding, timestamps, signatures, and more
+- **Error Handling**: Robust error handling with retry logic
+- **Proxy Support**: HTTP/HTTPS proxy configuration
 
 ### Installation
 
@@ -45,315 +37,226 @@ cd ComfyUI-HTTP
 pip install -r requirements.txt
 ```
 
-### Basic Usage
+## Node Categories
 
-Once installed, you'll find new HTTP nodes in your ComfyUI node menu:
+### HTTP/Session
+- **HTTP Session Manager**: Create and manage persistent HTTP sessions
+- **HTTP Authentication**: Configure various authentication methods
 
-- **HTTP Get** - Perform GET requests
-- **HTTP Post JSON** - Send JSON data
-- **HTTP Post Form Data** - Send form data with files
-- **HTTP Get JSON Field** - Extract JSON fields
-- **Base64 to Image** - Convert base64 to images
-- **Image to Base64** - Convert images to base64
+### HTTP/Methods
+- **HTTP GET Request**: Perform GET requests with full configuration
+- **HTTP POST Request**: POST with JSON, form data, or raw data support
+- **HTTP PUT Request**: PUT requests for updates
+- **HTTP PATCH Request**: PATCH requests for partial updates  
+- **HTTP DELETE Request**: DELETE requests
+- **HTTP HEAD Request**: HEAD requests to get headers only
+- **HTTP OPTIONS Request**: OPTIONS requests for CORS and allowed methods
 
-## Documentation
+### HTTP/Form Data
+- **HTTP Form Data**: Container for multipart form data
+- **HTTP Form Data Item**: Basic form field
+- **HTTP Form Text Item**: Text form field with content type
+- **HTTP Form File Item**: File upload field
+- **HTTP Form Image Item**: Image upload field (from ComfyUI IMAGE)
+- **HTTP Form Data Concat**: Combine multiple form data objects
 
-### Node Reference
+### HTTP/JSON
+- **HTTP Convert JSON**: Parse, format, stringify, minify JSON
+- **HTTP Get JSON Field**: Extract fields using JSONPath or simple notation
 
-#### HTTP Get Node
-Performs HTTP GET requests with customizable parameters and headers.
+### HTTP/File Operations
+- **HTTP File Upload**: Upload files with progress and configuration
 
-**Inputs:**
-- `url` (string): Target URL
-- `headers` (string, optional): JSON-formatted headers
-- `params` (string, optional): JSON-formatted query parameters
-- `timeout` (int): Request timeout in seconds
+### HTTP/Image Operations
+- **HTTP Image Loader**: Load images from URLs with resizing options
 
-**Outputs:**
-- `response` (string): Response body
-- `status_code` (int): HTTP status code
-- `headers` (string): Response headers
+### HTTP/Image Conversion
+- **Base64 to Image**: Convert base64 strings to ComfyUI IMAGE
+- **Image to Base64**: Convert ComfyUI IMAGE to base64 strings
 
-**Example:**
+### HTTP/Display
+- **HTTP Display Result**: Format and display HTTP responses
+
+### HTTP/Utilities
+- **HTTP Utils**: Various utility functions (URL encoding, signatures, etc.)
+
+## Usage Examples
+
+### Basic GET Request
+
+```
+[HTTP GET Request]
+url: "https://api.github.com/users/octocat"
+↓
+status_code: 200
+headers: {...}
+content: {"login": "octocat", ...}
+json: (formatted JSON)
+```
+
+### POST with JSON Data
+
+```
+[HTTP POST Request]
+url: "https://api.example.com/users"
+content_type: "json"
+json_data: '{"name": "John", "email": "john@example.com"}'
+↓
+status_code: 201
+content: {"id": 123, "name": "John", ...}
+```
+
+### Session with Authentication
+
+```
+[HTTP Session Manager]
+session_name: "api_session"
+base_url: "https://api.example.com"
+auth_type: "bearer"
+token: "your_token_here"
+↓
+session → [HTTP GET Request]
+           url: "/users/me"
+```
+
+### Form Data with File Upload
+
+```
+[HTTP Form File Item]          [HTTP Form Text Item]
+name: "document"               name: "title" 
+file_path: "/path/to/file.pdf" value: "My Document"
+↓                              ↓
+form_item                      form_item
+         ↓                ↓
+      [HTTP Form Data]
+      ↓
+      form_data → [HTTP POST Request]
+                  content_type: "form-data"
+```
+
+### Image Upload from ComfyUI
+
+```
+[Load Image] → [HTTP Form Image Item]
+               name: "photo"
+               format: "JPEG"
+               quality: 95
+               ↓
+               form_item → [HTTP Form Data] → [HTTP POST Request]
+```
+
+### Load Image from URL
+
+```
+[HTTP Image Loader]
+url: "https://example.com/image.jpg"
+resize_mode: "fit" 
+target_width: 512
+target_height: 512
+↓
+image (ComfyUI IMAGE tensor)
+```
+
+### JSON Field Extraction
+
+```
+[HTTP GET Request] → [HTTP Get JSON Field]
+                     field_path: "$.data.users[0].name"
+                     extraction_method: "jsonpath"
+                     ↓
+                     value: "John Doe"
+```
+
+## Authentication Methods
+
+### Basic Authentication
 ```json
 {
-  "url": "https://api.example.com/data",
-  "headers": {
-    "Authorization": "Bearer your-token",
-    "Content-Type": "application/json"
-  },
-  "params": {
-    "limit": 10,
-    "page": 1
-  }
+  "auth_type": "basic",
+  "username": "your_username", 
+  "password": "your_password"
 }
 ```
 
-#### HTTP Post JSON Node
-Sends JSON data via POST requests.
-
-**Inputs:**
-- `url` (string): Target URL
-- `json_data` (string): JSON payload
-- `headers` (string, optional): Custom headers
-- `timeout` (int): Request timeout
-
-**Outputs:**
-- `response` (string): Response body
-- `status_code` (int): HTTP status code
-
-#### HTTP Post Form Data Node
-Handles multipart form data with file uploads.
-
-**Inputs:**
-- `url` (string): Target URL
-- `form_data` (HTTPFormData): Form data object
-- `headers` (string, optional): Additional headers
-- `timeout` (int): Request timeout
-
-#### Form Data Builder Nodes
-
-##### HTTP Form Text Item
-Creates text form fields.
-
-**Inputs:**
-- `name` (string): Field name
-- `value` (string): Field value
-
-##### HTTP Form File Item
-Creates file upload fields.
-
-**Inputs:**
-- `name` (string): Field name
-- `file_path` (string): Path to file
-- `mime_type` (string, optional): File MIME type
-
-##### HTTP Form Image Item
-Creates image upload fields from ComfyUI images.
-
-**Inputs:**
-- `name` (string): Field name
-- `image` (IMAGE): ComfyUI image tensor
-- `filename` (string): Filename for upload
-- `format` (string): Image format (PNG, JPEG, etc.)
-
-#### Utility Nodes
-
-##### HTTP Get JSON Field
-Extracts specific fields from JSON responses.
-
-**Inputs:**
-- `json_data` (string): JSON string
-- `field_path` (string): Dot-notation field path (e.g., "data.items.0.name")
-
-**Outputs:**
-- `value` (string): Extracted field value
-
-##### Base64 to Image
-Converts base64 encoded images to ComfyUI image tensors.
-
-**Inputs:**
-- `base64_string` (string): Base64 encoded image
-
-**Outputs:**
-- `image` (IMAGE): ComfyUI image tensor
-
-##### Image to Base64
-Converts ComfyUI images to base64 strings.
-
-**Inputs:**
-- `image` (IMAGE): ComfyUI image tensor
-- `format` (string): Output format (PNG, JPEG)
-
-**Outputs:**
-- `base64_string` (string): Base64 encoded image
-
-### Workflow Examples
-
-#### Example 1: API Data Fetching
+### Bearer Token
 ```json
 {
-  "workflow": "Fetch user data from API",
-  "nodes": [
-    {
-      "type": "HTTP Get",
-      "url": "https://jsonplaceholder.typicode.com/users/1",
-      "headers": "{\"Accept\": \"application/json\"}"
-    },
-    {
-      "type": "HTTP Get JSON Field",
-      "field_path": "name"
-    }
-  ]
+  "auth_type": "bearer",
+  "token": "your_bearer_token"
 }
 ```
 
-#### Example 2: Image Upload to API
+### API Key
 ```json
 {
-  "workflow": "Upload generated image to API",
-  "nodes": [
-    {
-      "type": "Image to Base64",
-      "format": "PNG"
-    },
-    {
-      "type": "HTTP Form Image Item",
-      "name": "image",
-      "filename": "generated.png"
-    },
-    {
-      "type": "HTTP Post Form Data",
-      "url": "https://api.example.com/upload"
-    }
-  ]
+  "auth_type": "api_key",
+  "api_key": "your_api_key",
+  "api_key_header": "X-API-Key"
 }
 ```
 
-#### Example 3: AI Service Integration
+### Custom Headers
 ```json
 {
-  "workflow": "Send image to AI service and get results",
-  "nodes": [
-    {
-      "type": "Image to Base64"
-    },
-    {
-      "type": "HTTP Post JSON",
-      "url": "https://ai-service.com/analyze",
-      "json_data": "{\"image\": \"{{base64}}\", \"model\": \"v2\"}"
-    },
-    {
-      "type": "HTTP Get JSON Field",
-      "field_path": "result.confidence"
-    }
-  ]
+  "auth_type": "none",
+  "custom_headers": "{\"Authorization\": \"Custom your_token\"}"
 }
 ```
 
-## Development
+## Session Management
 
-### Prerequisites
-- Python 3.8+
-- ComfyUI
-- Git
-
-### Development Setup
-
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/wawahuy/ComfyUI-HTTP.git
-   cd ComfyUI-HTTP
-   ```
-
-2. **Install development dependencies:**
-   ```bash
-   pip install -e ".[dev]"
-   ```
-
-3. **Install pre-commit hooks:**
-   ```bash
-   pre-commit install
-   ```
-
-4. **Run tests:**
-   ```bash
-   pytest
-   ```
-
-### Code Quality
-
-This project maintains high code quality standards:
-
-- **Formatting**: [Black](https://github.com/psf/black)
-- **Import Sorting**: [isort](https://pycqa.github.io/isort/)
-- **Linting**: [Flake8](https://flake8.pycqa.org/)
-- **Type Checking**: [MyPy](https://mypy.readthedocs.io/)
-- **Testing**: [pytest](https://pytest.org/)
-
-### Running Quality Checks
-
-```bash
-# Format code
-black .
-isort .
-
-# Lint code
-flake8 .
-
-# Type checking
-mypy .
-
-# Run tests with coverage
-pytest --cov=. --cov-report=html
-```
-
-### Project Structure
+Sessions maintain:
+- Cookies across requests
+- Authentication credentials
+- Custom headers
+- Connection pooling
+- Base URL for relative requests
 
 ```
-ComfyUI-HTTP/
-├── __init__.py                 # Main module initialization
-├── http_get.py                # HTTP GET node implementation
-├── http_post_json.py          # HTTP POST JSON node
-├── http_post_form_data.py     # HTTP POST form data node
-├── http_post_raw.py           # HTTP POST raw data node
-├── http_get_json_field.py     # JSON field extraction
-├── http_form_data.py          # Form data container
-├── http_form_data_concat.py   # Form data concatenation
-├── http_form_text_item.py     # Text form field
-├── http_form_file_item.py     # File form field
-├── http_form_image_item.py    # Image form field
-├── base64_to_image.py         # Base64 to image converter
-├── image_to_base64.py         # Image to base64 converter
-├── node_metadata.json         # Node metadata for ComfyUI
-├── requirements.txt           # Python dependencies
-├── pyproject.toml            # Project configuration
-├── README.md                 # This file
-├── PR_RULES.md              # Contribution guidelines
-└── tests/                   # Test suite
-    ├── test_http_nodes.py   # HTTP node tests
-    ├── test_form_data.py    # Form data tests
-    └── test_converters.py   # Converter tests
+[HTTP Session Manager] → [Multiple HTTP Requests]
 ```
 
-## Contributing
+## Error Handling
 
-We welcome contributions! Please see our [Pull Request Guidelines](PR_RULES.md) for detailed information on:
+All nodes include robust error handling:
+- Network timeouts with retries
+- SSL verification options
+- Proxy support
+- Detailed error messages
+- Graceful fallbacks
 
-- Code style and standards
-- Testing requirements
-- Documentation guidelines
-- Review process
+## JSONPath Support
 
-### Quick Contribution Guide
+Extract data from JSON responses using JSONPath expressions:
 
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
-3. **Commit** your changes (`git commit -m 'feat: add amazing feature'`)
-4. **Push** to the branch (`git push origin feature/amazing-feature`)
-5. **Open** a Pull Request
+- `$.data` - Root data field
+- `$.users[0].name` - First user's name
+- `$.users[*].email` - All user emails
+- `$..price` - All price fields recursively
 
-### Development Commands
+## Utility Functions
 
-```bash
-# Install in development mode
-pip install -e ".[dev]"
+The HTTP Utils node provides:
+- URL encoding/decoding
+- Base64 encoding/decoding  
+- JSON escaping/unescaping
+- HTML escaping/unescaping
+- Timestamp generation
+- UUID generation
+- HMAC signature generation
+- URL parsing and building
+- Email validation
+- Authentication header creation
 
-# Run all tests
-pytest
+## Best Practices
 
-# Run tests with coverage
-pytest --cov=. --cov-report=term-missing
+1. **Use Sessions**: For multiple requests to the same API, use HTTP Session Manager
+2. **Handle Errors**: Always check status codes and use HTTP Display Result
+3. **Secure Credentials**: Use environment variables for sensitive data
+4. **Timeout Configuration**: Set appropriate timeouts for your use case
+5. **Content Types**: Specify correct content types for better API compatibility
+6. **Rate Limiting**: Implement delays between requests if needed
 
-# Format code
-black . && isort .
-
-# Lint code
-flake8 . && mypy .
-
-# Build package
-python -m build
-```
 
 ## License
 
@@ -370,25 +273,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **GitHub Issues**: [Report bugs or request features](https://github.com/wawahuy/ComfyUI-HTTP/issues)
 - **GitHub Discussions**: [Ask questions or share ideas](https://github.com/wawahuy/ComfyUI-HTTP/discussions)
 - **Documentation**: Check this README and code comments for usage examples
-
-## Roadmap
-
-### Upcoming Features
-
-- **Authentication Support**: OAuth, API keys, JWT tokens
-- **WebSocket Integration**: Real-time communication capabilities
-- **GraphQL Support**: GraphQL query and mutation nodes
-- **Testing Framework**: Built-in HTTP mocking for workflow testing
-- **Performance Monitoring**: Request timing and performance metrics
-- **Security Enhancements**: Request validation and sanitization
-- **Proxy Support**: HTTP proxy configuration options
-- **Batch Operations**: Bulk HTTP requests and parallel processing
-
-### Version History
-
-- **v1.0.0** - Initial release with core HTTP functionality
-- **v0.9.0** - Beta release with form data support
-- **v0.8.0** - Alpha release with basic GET/POST operations
 
 ---
 

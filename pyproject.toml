@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "comfyui-http"
-version = "1.0.0"
+version = "2.0.0"
 description = "HTTP nodes for ComfyUI - enabling seamless web API integration in your ComfyUI workflows"
 readme = "README.md"
 license = {text = "MIT"}

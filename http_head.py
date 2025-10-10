@@ -1,16 +1,16 @@
 """
-HTTP GET request node for ComfyUI
-Performs GET requests with full configuration support
+HTTP HEAD request node for ComfyUI
+Performs HEAD requests to get response headers without body
 """
 
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional
 from .http_client import HTTPClient
 from .http_auth import HTTPAuth
 from urllib.parse import urljoin
 import json
 
-class HTTPGet:
-    """HTTP GET Request Node for ComfyUI"""
+class HTTPHead:
+    """HTTP HEAD Request Node for ComfyUI"""
     
     @classmethod
     def INPUT_TYPES(cls):
@@ -32,7 +32,7 @@ class HTTPGet:
         }
     
     RETURN_TYPES = ("INT", "STRING", "STRING", "STRING")
-    RETURN_NAMES = ("status_code", "headers", "content", "json")
+    RETURN_NAMES = ("status_code", "headers", "content_length", "content_type")
     FUNCTION = "make_request"
     CATEGORY = "HTTP/Methods"
     
@@ -40,7 +40,7 @@ class HTTPGet:
                     headers: str = "{}", params: str = "{}", timeout: int = 30,
                     verify_ssl: bool = True, allow_redirects: bool = True,
                     cookies: str = "{}", proxy_url: str = ""):
-        """Make HTTP GET request"""
+        """Make HTTP HEAD request"""
         
         try:
             # Use session client if provided, otherwise create new one
@@ -87,27 +87,28 @@ class HTTPGet:
                 except Exception as e:
                     print(f"Warning: Failed to parse params: {e}")
             
+            # Prepare request kwargs
+            request_kwargs = {}
+            if params_dict:
+                request_kwargs["params"] = params_dict
+            
             # Make the request
-            status_code, response_headers, content = client.get(url, params=params_dict if params_dict else None)
+            status_code, response_headers, _ = client.head(url, **request_kwargs)
             
             # Convert headers to JSON string
             headers_json = json.dumps(response_headers, indent=2)
             
-            # Try to parse content as JSON
-            json_content = ""
-            try:
-                parsed_json = json.loads(content)
-                json_content = json.dumps(parsed_json, indent=2)
-            except:
-                json_content = content
+            # Extract common headers
+            content_length = response_headers.get("content-length", response_headers.get("Content-Length", ""))
+            content_type = response_headers.get("content-type", response_headers.get("Content-Type", ""))
             
             # Close client if not using session
             if not session:
                 client.close()
             
-            return (status_code, headers_json, content, json_content)
+            return (status_code, headers_json, content_length, content_type)
             
         except Exception as e:
-            error_msg = f"HTTP GET request failed: {str(e)}"
+            error_msg = f"HTTP HEAD request failed: {str(e)}"
             print(error_msg)
-            return (0, "{}", error_msg, error_msg)
+            return (0, "{}", "", "")
